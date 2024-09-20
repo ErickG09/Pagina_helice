@@ -9,7 +9,7 @@ const gaugeChart = new Chart(ctxGauge, {
     data: {
         labels: ['Energía Generada', 'Energía Restante'],
         datasets: [{
-            data: [0, 5],  // Valores iniciales
+            data: [0, 8],  // Valores iniciales: máximo de 8
             backgroundColor: ['#4caf50', '#ccc'],
             borderWidth: 1
         }]
@@ -46,14 +46,15 @@ const lineChart = new Chart(ctxLine, {
             },
             y: {
                 beginAtZero: true,
-                max: 5  // Ajusta el valor máximo para el voltaje
+                max: 8  // Cambia el valor máximo a 8 para voltaje
             }
         }
     }
 });
 
-// Variables para energía total y voltaje
+// Variables para energía total, voltaje, y el último timestamp
 let totalEnergia = 0;
+let ultimoTimestamp = null;
 
 // Función para obtener los datos desde la API
 async function obtenerDatosDesdeAPI() {
@@ -73,38 +74,45 @@ async function actualizarGraficos() {
 
     // Asegurarse de que los datos existen
     if (datos.length > 0) {
-        let voltajeActual = datos[datos.length - 1].valor;  // Obtén el valor más reciente
-        
-        // Ajustar la hora a la zona horaria de México usando Luxon
-        let now = luxon.DateTime.fromISO(datos[datos.length - 1].timestamp).setZone('America/Mexico_City');
-        let horaMexico = now.toFormat('dd/MM/yyyy HH:mm:ss');
+        let nuevoDato = datos[datos.length - 1];  // Obtener el último dato
+        let voltajeActual = nuevoDato.valor;
+        let now = new Date(nuevoDato.timestamp);
 
-        // Limitar el voltaje a un máximo de 5
-        if (voltajeActual > 5) {
-            voltajeActual = 5;
+        // Verificar si el timestamp es nuevo y solo actualizar si el dato es nuevo
+        if (ultimoTimestamp === null || new Date(nuevoDato.timestamp).getTime() !== new Date(ultimoTimestamp).getTime()) {
+            // Limitar el voltaje a un máximo de 8
+            if (voltajeActual > 8) {
+                voltajeActual = 8;
+            }
+
+            // Actualizar el gráfico circular
+            gaugeChart.data.datasets[0].data = [voltajeActual, 8 - voltajeActual];
+            gaugeChart.update(); // Redibujar gráfico de gauge
+
+            // Actualizar el gráfico de línea
+            lineChartData.labels.push(now);
+            lineChartData.datasets[0].data.push(voltajeActual);
+            lineChart.update();
+
+            // Acumular energía total
+            totalEnergia += parseFloat(voltajeActual);
+
+            // Actualizar valores en el HTML
+            document.getElementById('voltaje-actual').textContent = voltajeActual + " V";
+            document.getElementById('total-energia').textContent = totalEnergia.toFixed(2) + " V";
+
+            // Guardar el último timestamp como referencia
+            ultimoTimestamp = nuevoDato.timestamp;
+        } else {
+            console.log('No hay datos nuevos. Esperando...');
         }
-
-        // Actualizar el gráfico circular
-        gaugeChart.data.datasets[0].data = [voltajeActual, 5 - voltajeActual];
-        gaugeChart.update(); // Redibujar gráfico de gauge
-
-        // Actualizar el gráfico de línea
-        lineChartData.labels.push(horaMexico);
-        lineChartData.datasets[0].data.push(voltajeActual);
-        lineChart.update(); 
-
-        // Acumular energía total
-        totalEnergia += parseFloat(voltajeActual);
-
-        // Actualizar valores en el HTML
-        document.getElementById('voltaje-actual').textContent = voltajeActual + " V";
-        document.getElementById('total-energia').textContent = totalEnergia.toFixed(2) + " V";
+    } else {
+        console.log('No se encontraron datos en la API.');
     }
 }
 
 // Generar nuevos valores al cargar la página
 window.onload = () => {
-    // Llamar la función para actualizar gráficos y obtener datos de la API
     actualizarGraficos();
-    setInterval(actualizarGraficos, 3000);  // Actualizar cada 3 segundos
+    setInterval(actualizarGraficos, 2000);  // Actualizar cada 2 segundos
 };

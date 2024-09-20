@@ -13,8 +13,8 @@ body {
 .container {
     text-align: center;
     width: 80%;
-    margin-top: 50px; /* Agrega un margen para que el título no quede tan arriba */
-    padding-top: 500px; 
+    margin-top: 50px; 
+    padding-top: 300px; 
 }
 
 h1 {
@@ -39,9 +39,14 @@ h1 {
     height: 400px;
 }
 
+
 .chart-container {
     margin-top: 40px;
     width: 80%;
+    max-width: 600px; 
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center; 
 }
 
 canvas {
