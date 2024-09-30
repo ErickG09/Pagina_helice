@@ -80,8 +80,8 @@ async function actualizarGraficos() {
 
         // Verificar si el timestamp es nuevo y solo actualizar si el dato es nuevo
         if (ultimoTimestamp === null || new Date(nuevoDato.timestamp).getTime() !== new Date(ultimoTimestamp).getTime()) {
-            // Convertir el valor recibido a mW
-            let voltajeEnMW = voltajeActual * 10;
+            // Convertir el valor recibido a mW con la nueva fórmula
+            let voltajeEnMW = (voltajeActual * 10) * Math.pow(10, -3);  // Multiplicar por 10 y luego por 10^-3
 
             // Limitar el voltaje a un máximo de 80 mW (para mantener la escala)
             if (voltajeEnMW > 80) {
@@ -101,7 +101,7 @@ async function actualizarGraficos() {
             totalEnergia += parseFloat(voltajeEnMW);
 
             // Actualizar valores en el HTML con la unidad mW
-            document.getElementById('voltaje-actual').textContent = voltajeEnMW + " mW";
+            document.getElementById('voltaje-actual').textContent = voltajeEnMW.toFixed(2) + " mW";
             document.getElementById('total-energia').textContent = totalEnergia.toFixed(2) + " mW";
 
             // Guardar el último timestamp como referencia
@@ -117,5 +117,5 @@ async function actualizarGraficos() {
 // Generar nuevos valores al cargar la página
 window.onload = () => {
     actualizarGraficos();
-    setInterval(actualizarGraficos, 2000);  // Actualizar cada 2 segundos
+    setInterval(actualizarGraficos, 1000);  // Actualizar cada 2 segundos
 };
