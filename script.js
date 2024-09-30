@@ -9,7 +9,7 @@ const gaugeChart = new Chart(ctxGauge, {
     data: {
         labels: ['Energía Generada', 'Energía Restante'],
         datasets: [{
-            data: [0, 8],  // Valores iniciales: máximo de 8
+            data: [0, 80],  // Cambia el valor inicial, máximo 80 (para mW)
             backgroundColor: ['#4caf50', '#ccc'],
             borderWidth: 1
         }]
@@ -24,7 +24,7 @@ const gaugeChart = new Chart(ctxGauge, {
 let lineChartData = {
     labels: [],
     datasets: [{
-        label: 'Voltaje',
+        label: 'Voltaje en mW',
         data: [],
         borderColor: 'green',
         borderWidth: 2,
@@ -46,7 +46,7 @@ const lineChart = new Chart(ctxLine, {
             },
             y: {
                 beginAtZero: true,
-                max: 8  // Cambia el valor máximo a 8 para voltaje
+                max: 80  // Cambia el valor máximo a 80 para mW
             }
         }
     }
@@ -80,26 +80,29 @@ async function actualizarGraficos() {
 
         // Verificar si el timestamp es nuevo y solo actualizar si el dato es nuevo
         if (ultimoTimestamp === null || new Date(nuevoDato.timestamp).getTime() !== new Date(ultimoTimestamp).getTime()) {
-            // Limitar el voltaje a un máximo de 8
-            if (voltajeActual > 8) {
-                voltajeActual = 8;
+            // Convertir el valor recibido a mW
+            let voltajeEnMW = voltajeActual * 10;
+
+            // Limitar el voltaje a un máximo de 80 mW (para mantener la escala)
+            if (voltajeEnMW > 80) {
+                voltajeEnMW = 80;
             }
 
             // Actualizar el gráfico circular
-            gaugeChart.data.datasets[0].data = [voltajeActual, 8 - voltajeActual];
+            gaugeChart.data.datasets[0].data = [voltajeEnMW, 80 - voltajeEnMW];
             gaugeChart.update(); // Redibujar gráfico de gauge
 
             // Actualizar el gráfico de línea
             lineChartData.labels.push(now);
-            lineChartData.datasets[0].data.push(voltajeActual);
+            lineChartData.datasets[0].data.push(voltajeEnMW);
             lineChart.update();
 
-            // Acumular energía total
-            totalEnergia += parseFloat(voltajeActual);
+            // Acumular energía total con el valor en mW
+            totalEnergia += parseFloat(voltajeEnMW);
 
-            // Actualizar valores en el HTML
-            document.getElementById('voltaje-actual').textContent = voltajeActual + " V";
-            document.getElementById('total-energia').textContent = totalEnergia.toFixed(2) + " V";
+            // Actualizar valores en el HTML con la unidad mW
+            document.getElementById('voltaje-actual').textContent = voltajeEnMW + " mW";
+            document.getElementById('total-energia').textContent = totalEnergia.toFixed(2) + " mW";
 
             // Guardar el último timestamp como referencia
             ultimoTimestamp = nuevoDato.timestamp;
