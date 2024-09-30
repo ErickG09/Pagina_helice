@@ -9,7 +9,7 @@ const gaugeChart = new Chart(ctxGauge, {
     data: {
         labels: ['Energía Generada', 'Energía Restante'],
         datasets: [{
-            data: [0, 0.6],  // Cambia el valor inicial, máximo 0.6 (para mW)
+            data: [0, 0.05],  // Cambia el valor inicial, máximo 0.6 (para mW)
             backgroundColor: ['#4caf50', '#ccc'],
             borderWidth: 1
         }]
@@ -46,7 +46,7 @@ const lineChart = new Chart(ctxLine, {
             },
             y: {
                 beginAtZero: true,
-                max: 0.6  // Cambia el valor máximo a 0.6 para mW
+                max: 0.05  // Cambia el valor máximo a 0.6 para mW
             }
         }
     }
@@ -84,12 +84,12 @@ async function actualizarGraficos() {
             let voltajeEnMW = (voltajeActual * 10) * Math.pow(10, -3);  // Multiplicar por 10 y luego por 10^-3
 
             // Limitar el voltaje a un máximo de 0.6 mW (para mantener la escala)
-            if (voltajeEnMW > 0.6) {
-                voltajeEnMW = 0.6;
+            if (voltajeEnMW > 0.05) {
+                voltajeEnMW = 0.05;
             }
 
             // Actualizar el gráfico circular
-            gaugeChart.data.datasets[0].data = [voltajeEnMW, 0.6 - voltajeEnMW];
+            gaugeChart.data.datasets[0].data = [voltajeEnMW, 0.05 - voltajeEnMW];
             gaugeChart.update(); // Redibujar gráfico de gauge
 
             // Actualizar el gráfico de línea
